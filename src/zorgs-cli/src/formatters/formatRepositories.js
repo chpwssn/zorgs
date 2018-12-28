@@ -1,10 +1,10 @@
-const { table } = require('table');
-const chalk = require('chalk');
+const { table } = require("table");
+const chalk = require("chalk");
 
 module.exports = function formatRepositories(repositories) {
-  const data = [['Year'], ['Repositories']];
+  const data = [["Year"], ["Repositories"]];
   if (repositories.private > 0) {
-    data.push(['Public repositories'], ['Private repositories']);
+    data.push(["Private repositories"], ["Public repositories"]);
   }
   Object.entries(repositories.years).forEach(([year, yearRepositories]) => {
     data[0].push(chalk.bold(year));
@@ -14,7 +14,7 @@ module.exports = function formatRepositories(repositories) {
       data[3].push(yearRepositories.public.toLocaleString());
     }
   });
-  data[0].push(chalk.bold('All-time'));
+  data[0].push(chalk.bold("All-time"));
   data[1].push(repositories.total.toLocaleString());
   if (repositories.private > 0) {
     data[2].push(repositories.private.toLocaleString());

@@ -2,14 +2,15 @@
 
 /* eslint-disable no-console, no-process-exit */
 
-const ora = require('ora');
-const chalk = require('chalk');
-const boxen = require('boxen');
-const zorgs = require('zorgs');
+const ora = require("ora");
+const chalk = require("chalk");
+const boxen = require("boxen");
+const zorgs = require("zorgs");
 
-const formatRateLimit = require('./formatters/formatRateLimit.js');
-const formatRepositories = require('./formatters/formatRepositories.js');
-const formatCommits = require('./formatters/formatCommits.js');
+const formatRateLimit = require("./formatters/formatRateLimit.js");
+const formatRepositories = require("./formatters/formatRepositories.js");
+const formatCommits = require("./formatters/formatCommits.js");
+const formatPrs = require("./formatters/formatPrs.js");
 
 const spinner = ora();
 const log = console.log;
@@ -20,14 +21,14 @@ if (organization === undefined || token === undefined) {
   console.error(
     `🦑  zorgs:
 
-  ${chalk.underline('Error:')} Please provide ${chalk.bold(
-      'GH_ORGANIZATION'
-    )} and ${chalk.bold('GH_TOKEN')} environment variables
+  ${chalk.underline("Error:")} Please provide ${chalk.bold(
+      "GH_ORGANIZATION"
+    )} and ${chalk.bold("GH_TOKEN")} environment variables
 
-  ${chalk.underline('Usage:')} GH_ORGANIZATION=google GH_TOKEN=... zorgs
+  ${chalk.underline("Usage:")} GH_ORGANIZATION=google GH_TOKEN=... zorgs
 
   ${chalk.underline(
-    'Advice:'
+    "Advice:"
   )} You can generate a GitHub token on https://github.com/settings/tokens,
   add ☑ repo scope to get private repositories information for the organizations
   you have access to.`
@@ -38,47 +39,54 @@ if (organization === undefined || token === undefined) {
 async function run() {
   const data = zorgs({
     organization,
-    token,
+    token
   });
 
   log(
     boxen(
-      `${chalk.bold('🦑  zorgs')}\n${chalk.italic(
-        'GitHub organizations stats'
+      `${chalk.bold("🦑  zorgs")}\n${chalk.italic(
+        "GitHub organizations stats"
       )}`,
-      { align: 'center', padding: 1 }
+      { align: "center", padding: 1 }
     )
   );
-  log('');
+  log("");
   log(
     `${chalk.underline(
-      'Current organization:'
+      "Current organization:"
     )} https://github.com/${organization}`
   );
-  spinner.start('Computing rate limit');
+  spinner.start("Computing rate limit");
   const startLimit = formatRateLimit(await data.getRateLimit());
   spinner.stop();
-  log(`${chalk.underline('GitHub rate limit:')} ${startLimit}`);
-  log('');
+  log(`${chalk.underline("GitHub rate limit:")} ${startLimit}`);
+  log("");
 
-  spinner.start('Computing repositories');
+  spinner.start("Computing repositories");
   const repositories = formatRepositories(await data.getRepositories());
   spinner.stop();
-  log(chalk.underline('Repositories created per year:'));
+  log(chalk.underline("Repositories created per year:"));
   log(repositories);
 
-  spinner.start('Computing commits');
+  spinner.start("Computing commits");
   const commits = formatCommits(await data.getCommits());
   spinner.stop();
-  log(chalk.underline('Commits pushed per year:'));
+  log(chalk.underline("Commits pushed per year:"));
   log(commits);
-  log('');
+  log("");
 
-  spinner.start('Computing rate limit');
+  spinner.start("Computing pull requests, this could take a while...");
+  const prs = formatPrs(await data.getPrs());
+  spinner.stop();
+  log(chalk.underline("Pull Requests opened and closed per year:"));
+  log(prs);
+  log("");
+
+  spinner.start("Computing rate limit");
   const endLimit = formatRateLimit(await data.getRateLimit());
   spinner.stop();
-  log(`${chalk.underline('GitHub rate limit:')} ${endLimit}`);
-  log('');
+  log(`${chalk.underline("GitHub rate limit:")} ${endLimit}`);
+  log("");
 }
 
 run().catch(error => {

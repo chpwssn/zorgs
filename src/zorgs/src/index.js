@@ -1,29 +1,31 @@
-const { ApolloClient } = require('apollo-client');
-const { HttpLink } = require('apollo-link-http');
-const { InMemoryCache } = require('apollo-cache-inmemory');
-const { setContext } = require('apollo-link-context');
-const fetch = require('node-fetch');
+const { ApolloClient } = require("apollo-client");
+const { HttpLink } = require("apollo-link-http");
+const { InMemoryCache } = require("apollo-cache-inmemory");
+const { setContext } = require("apollo-link-context");
+const fetch = require("node-fetch");
 
-const getRateLimit = require('./getRateLimit.js');
-const getRepositories = require('./getRepositories.js');
-const getCommits = require('./getCommits.js');
+const getRateLimit = require("./getRateLimit.js");
+const getRepositories = require("./getRepositories.js");
+const getCommits = require("./getCommits.js");
+const getRepositoryPrs = require("./getRepositoryPrs.js");
+const getPrs = require("./getPrs.js");
 
 module.exports = function({ organization, token }) {
   const authLink = setContext((_, { headers }) => ({
     headers: {
       ...headers,
-      authorization: `Bearer ${token}`,
-    },
+      authorization: `Bearer ${token}`
+    }
   }));
 
   const httpLink = new HttpLink({
-    uri: 'https://api.github.com/graphql',
-    fetch,
+    uri: "https://api.github.com/graphql",
+    fetch
   });
 
   const client = new ApolloClient({
     link: authLink.concat(httpLink),
-    cache: new InMemoryCache(),
+    cache: new InMemoryCache()
   });
 
   return {
@@ -36,5 +38,18 @@ module.exports = function({ organization, token }) {
     getCommits() {
       return getCommits({ client, organization });
     },
+    getRepositoryPrs() {
+      return getRepositoryPrs({
+        client,
+        organization,
+        repository: "radar-relay-frontend"
+      });
+    },
+    getPrs() {
+      return getPrs({
+        client,
+        organization
+      });
+    }
   };
 };
